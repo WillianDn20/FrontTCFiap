@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-// --- ESTILOS DO COMPONENTE ---
 const Container = styled.div`
   max-width: 600px;
   margin: 40px auto;
   padding: 30px;
-  background-color: #fff;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   font-family: Arial, sans-serif;
 `;
 
@@ -30,25 +29,33 @@ const Input = styled.input`
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1em;
+`;
+
+const FileLabel = styled.label`
+  font-size: 0.9em;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 `;
 
 const TextArea = styled.textarea`
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
-  min-height: 200px;
+  font-size: 1em;
+  min-height: 150px;
   resize: vertical;
 `;
 
 const Button = styled.button`
-  padding: 15px;
+  padding: 12px;
   background-color: #27ae60;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1em;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -58,97 +65,101 @@ const Button = styled.button`
   }
 `;
 
-// --- LÓGICA DO COMPONENTE ---
 function PostForm() {
-  const { id } = useParams();
-  
-  // Utilizo o useNavigate para redirecionar o usuário de tela automaticamente após salvar
-  const navigate = useNavigate();
-  
   const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
   const [content, setContent] = useState('');
+  const [attachment, setAttachment] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const userName = localStorage.getItem('userName') || 'Teacher';
 
-  // Se eu estiver na tela de edição (tem ID), busco os dados do post assim que a tela abrir
+  // Verifica se o ID passado na URL é realmente um ID válido do MongoDB (24 caracteres hexadecimais)
+  const isEditing = id && id.length === 24;
+
   useEffect(() => {
-    if (id) {
-      const carregarPost = async () => {
-        try {
-          const response = await api.get(`/posts/${id}`);
-          setTitle(response.data.title);
-          setAuthor(response.data.author);
-          setContent(response.data.content);
-        } catch (error) {
-          console.error("Erro ao carregar o post para edição:", error);
-          alert("Não foi possível carregar os dados do post.");
-        }
-      };
-      carregarPost();
+    if (isEditing) {
+      loadPostForEditing();
     }
   }, [id]);
 
-  // Função disparada ao clicar no botão de salvar/publicar
+  const loadPostForEditing = async () => {
+    try {
+      const response = await api.get(`/posts/${id}`);
+      setTitle(response.data.title);
+      setContent(response.data.content);
+      setAttachment(response.data.attachment || '');
+    } catch (error) {
+      console.error("Error loading post:", error);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type.startsWith('video/')) {
+      alert("Vídeos não são permitidos como anexo. Apenas imagens e arquivos PDF.");
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAttachment(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Crio o objeto com os dados exatos que o meu Back-end espera receber
-    const postData = {
-      title,
-      author,
-      content
-    };
 
     try {
-      if (id) {
-        // Se tem ID, eu faço um PUT (Atualizar)
+      const postData = { title, content, author: userName, attachment };
+
+      if (isEditing) {
         await api.put(`/posts/${id}`, postData);
         alert("Post atualizado com sucesso!");
       } else {
-        // Se não tem ID, eu faço um POST (Criar)
         await api.post('/posts', postData);
-        alert("Novo post publicado com sucesso!");
+        alert("Post criado com sucesso!");
       }
-      
-      // Após o sucesso, eu redireciono o usuário de volta para o Painel Admin
       navigate('/admin');
-      
     } catch (error) {
-      console.error("Erro ao salvar a postagem:", error);
-      alert("Ocorreu um erro ao salvar. Verifique o console.");
+      console.error("Error saving post:", error);
+      alert("Erro ao salvar a postagem. Verifique os dados.");
     }
   };
 
   return (
     <Container>
-      <Title>{id ? 'Editar Postagem' : 'Nova Postagem'}</Title>
+      <Title>{isEditing ? 'Editar Postagem' : 'Nova Postagem'}</Title>
       
       <Form onSubmit={handleSubmit}>
         <Input 
           type="text" 
-          placeholder="Título do Post" 
+          placeholder="Título do post" 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
         
-        <Input 
-          type="text" 
-          placeholder="Nome do Autor" 
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
-        
         <TextArea 
-          placeholder="Escreva o conteúdo do post aqui..." 
+          placeholder="Escreva o conteúdo do seu post aqui..." 
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
         />
+
+        <FileLabel>
+          Anexo (Apenas Imagens ou PDF):
+          <Input 
+            type="file" 
+            accept="image/*,application/pdf"
+            onChange={handleFileChange}
+          />
+        </FileLabel>
         
-        <Button type="submit">
-          {id ? 'Salvar Alterações' : 'Publicar Postagem'}
-        </Button>
+        <Button type="submit">{isEditing ? 'Salvar Alterações' : 'Publicar Postagem'}</Button>
       </Form>
     </Container>
   );

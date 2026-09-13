@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const Container = styled.div`
@@ -53,13 +53,14 @@ const RegisterLink = styled.div`
   margin-top: 20px;
   font-size: 0.9em;
 
-  a {
+  span {
     color: #27ae60;
-    text-decoration: none;
     font-weight: bold;
+    cursor: pointer;
+    text-decoration: underline;
 
     &:hover {
-      text-decoration: underline;
+      color: #2ecc71;
     }
   }
 `;
@@ -74,10 +75,13 @@ function Login() {
     
     try {
       const response = await api.post('/login', { email, password });
-      const { role, name } = response.data;
+      
+      // Recebe o e-mail junto com o nome e a role
+      const { role, name, email: userEmail } = response.data;
       
       localStorage.setItem('userRole', role);
       localStorage.setItem('userName', name);
+      localStorage.setItem('userEmail', userEmail); // Salva o e-mail no navegador
       
       if (role === 'teacher') {
         navigate('/admin');
@@ -116,7 +120,7 @@ function Login() {
       </Form>
 
       <RegisterLink>
-        Ainda não tem conta? <Link to="/Register">Crie uma aqui</Link>
+        Ainda não tem conta? <span onClick={() => navigate('/register')}>Crie uma aqui</span>
       </RegisterLink>
     </Container>
   );

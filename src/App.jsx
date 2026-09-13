@@ -16,6 +16,7 @@ function App() {
         {/* Rotas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/registrar" element={<Register />} />
 
         {/* Rotas de Leitura (Alunos e Professores) */}
         <Route 
@@ -27,6 +28,25 @@ function App() {
           } 
         />
         
+        {/* Rotas de Criação (Apenas Professores) */}
+        <Route 
+          path="/post/new" 
+          element={
+            <PrivateRoute allowedRoles={['teacher', 'professor']}>
+              <PostForm />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/post/novo" 
+          element={
+            <PrivateRoute allowedRoles={['teacher', 'professor']}>
+              <PostForm />
+            </PrivateRoute>
+          } 
+        />
+        
+        {/* Rota de Leitura de um Post Específico */}
         <Route 
           path="/post/:id" 
           element={
@@ -46,15 +66,7 @@ function App() {
           } 
         />
         
-        <Route 
-          path="/post/new" 
-          element={
-            <PrivateRoute allowedRoles={['teacher', 'professor']}>
-              <PostForm />
-            </PrivateRoute>
-          } 
-        />
-        
+        {/* Rotas de Edição (Apenas Professores) */}
         <Route 
           path="/post/edit/:id" 
           element={
@@ -63,7 +75,16 @@ function App() {
             </PrivateRoute>
           } 
         />
+        <Route 
+          path="/post/editar/:id" 
+          element={
+            <PrivateRoute allowedRoles={['teacher', 'professor']}>
+              <PostForm />
+            </PrivateRoute>
+          } 
+        />
 
+        {/* Se a URL não existir, joga para o login */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
