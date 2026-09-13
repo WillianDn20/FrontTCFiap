@@ -1,38 +1,36 @@
-import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import api from '../services/api';
 
 // ==========================================
 // ESTILOS DO MENU SUPERIOR (APPLE LIQUID GLASS)
 // ==========================================
 const GlassNav = styled.nav`
   position: fixed;
-  top: 20px;
-  /* Centraliza no espaço restante da tela (tirando os 300px do menu lateral) */
+  top: 40px; 
   left: calc(50% + 150px); 
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
-  
-  /* Efeito de Vidro (Glassmorphism) */
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  
   padding: 8px 12px;
   border-radius: 50px;
   z-index: 1000;
 `;
 
-const NavLink = styled(Link)`
+const NavLink = styled(RouterNavLink)`
   color: #2c3e50;
   text-decoration: none;
   font-size: 1.05em;
   font-weight: bold;
-  padding: 12px 25px;
+  padding: 10px 22px; 
   border-radius: 30px;
+  border: 2px solid transparent; 
   transition: all 0.2s ease-in-out;
   
   &:hover {
@@ -40,32 +38,53 @@ const NavLink = styled(Link)`
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     color: #3498db;
   }
+
+  &.active {
+    color: #3498db;
+    border: 2px solid #3498db;
+    background-color: white;
+  }
 `;
 
 // ==========================================
-// ESTILOS DO CARD LATERAL (PERFIL)
+// ESTILOS DA BARRA LATERAL (PERFIL E AVISOS)
 // ==========================================
 const LeftSidebar = styled.aside`
   position: fixed;
-  top: 100px;
+  top: 40px; 
   left: 20px;
   width: 260px;
+  bottom: 20px; 
+  overflow-y: auto; 
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Espaço entre o card de perfil e futuros cards de avisos */
+  gap: 20px; 
   z-index: 100;
+
+  &::-webkit-scrollbar {
+    width: 0px;
+  }
 `;
 
-const UserCard = styled.div`
-  background-color: white;
+const GlassCard = styled.div`
+  background-color: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px; 
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  font-family: Arial, sans-serif;
+`;
+
+const UserCard = styled(GlassCard)`
   padding: 30px 20px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Arial, sans-serif;
+`;
+
+const NoticeCard = styled(GlassCard)`
+  padding: 20px;
 `;
 
 const UserName = styled.h2`
@@ -126,18 +145,112 @@ const LogoutButton = styled.button`
   }
 `;
 
+// --- Estilos Específicos para os Avisos ---
+const NoticeTitle = styled.h3`
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  color: #2c3e50;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding-bottom: 10px;
+`;
+
+// Transformado em flex para organizar os itens em coluna
+const NoticeItem = styled.div`
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border-left: 3px solid #f39c12;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Espaçamento entre texto, data e botão */
+`;
+
+const NoticeText = styled.p`
+  margin: 0;
+  font-size: 0.9em;
+  color: #34495e;
+  line-height: 1.4;
+  word-break: break-word; /* Garante que palavras gigantes não quebrem o layout */
+`;
+
+const NoticeDate = styled.small`
+  font-size: 0.75em;
+  color: #7f8c8d;
+`;
+
+// Botão agora fica naturalmente embaixo da data e alinhado à esquerda
+const DeleteNoticeBtn = styled.button`
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 0.85em;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-start;
+  padding: 0;
+  margin-top: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const NoticeForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+`;
+
+const NoticeInput = styled.textarea`
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+`;
+
+const AddNoticeBtn = styled.button`
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85em;
+
+  &:hover {
+    background-color: #2ecc71;
+  }
+`;
+
+const formatarDataCurta = (dataString) => {
+  if (!dataString) return '';
+  const data = new Date(dataString);
+  return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+};
+
 function Header() {
   const navigate = useNavigate();
-  const userName = localStorage.getItem('userName');
+  const userName = localStorage.getItem('userName') || 'Usuário';
   const userRole = localStorage.getItem('userRole');
   const userEmail = localStorage.getItem('userEmail') || 'Email não carregado'; 
 
-  // Ajusta os espaços globais do site para acomodar o card lateral e o menu de vidro
+  const [notices, setNotices] = useState([]);
+  const [newNotice, setNewNotice] = useState('');
+
   useEffect(() => {
     if (userRole) {
-      document.body.style.marginLeft = '300px'; // Abre espaço para a barra lateral esquerda
-      document.body.style.paddingTop = '100px'; // Abre espaço para o menu flutuante no topo
-      document.body.style.backgroundColor = '#f4f6f8';
+      document.body.style.marginLeft = '300px'; 
+      document.body.style.paddingTop = '110px'; 
+      document.body.style.backgroundColor = '#e8ecef';
+      loadNotices(); 
     } else {
       document.body.style.marginLeft = '0';
       document.body.style.paddingTop = '0';
@@ -150,6 +263,38 @@ function Header() {
       document.body.style.backgroundColor = 'white';
     };
   }, [userRole]);
+
+  const loadNotices = async () => {
+    try {
+      const response = await api.get('/notices');
+      setNotices(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar avisos:", error);
+    }
+  };
+
+  const handleAddNotice = async (e) => {
+    e.preventDefault();
+    if (!newNotice.trim()) return;
+
+    try {
+      await api.post('/notices', { text: newNotice, author: userName });
+      setNewNotice('');
+      loadNotices(); 
+    } catch (error) {
+      console.error("Erro ao criar aviso:", error);
+    }
+  };
+
+  const handleDeleteNotice = async (id) => {
+    if(!window.confirm("Apagar este aviso?")) return;
+    try {
+      await api.delete(`/notices/${id}`);
+      loadNotices();
+    } catch (error) {
+      console.error("Erro ao deletar aviso:", error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -164,18 +309,14 @@ function Header() {
 
   return (
     <>
-      {/* 1. Menu Flutuante Topo (Estilo Apple Glass) */}
       <GlassNav>
-        <NavLink to="/">Lista de Posts</NavLink>
-        {isTeacher && (
-          <NavLink to="/admin">Painel Admin</NavLink>
-        )}
+        <NavLink to="/" end>Lista de Posts</NavLink>
+        {isTeacher && <NavLink to="/admin">Painel Admin</NavLink>}
       </GlassNav>
 
-      {/* 2. Área Lateral Esquerda para Cards */}
       <LeftSidebar>
         
-        {/* Card do Usuário */}
+        {/* Card de Perfil */}
         <UserCard>
           <UserName>{userName}</UserName>
           <Avatar>{AvatarIcon}</Avatar>
@@ -184,8 +325,40 @@ function Header() {
           <LogoutButton onClick={handleLogout}>Sair da conta</LogoutButton>
         </UserCard>
 
-        {/* FUTURO: Aqui embaixo você poderá adicionar os cards de Aviso tranquilamente! */}
-        
+        {/* Card de Avisos */}
+        <NoticeCard>
+          <NoticeTitle>📌 Mural de Avisos</NoticeTitle>
+          
+          {notices.length === 0 ? (
+            <p style={{ textAlign: 'center', fontSize: '0.85em', color: '#7f8c8d' }}>Nenhum aviso no momento.</p>
+          ) : (
+            notices.map(notice => (
+              <NoticeItem key={notice._id}>
+                <NoticeText>{notice.text}</NoticeText>
+                <NoticeDate>{formatarDataCurta(notice.createdAt)}</NoticeDate>
+                
+                {/* Botão de excluir agora aparece embaixo e organizadinho */}
+                {isTeacher && (
+                  <DeleteNoticeBtn onClick={() => handleDeleteNotice(notice._id)}>Excluir</DeleteNoticeBtn>
+                )}
+              </NoticeItem>
+            ))
+          )} {/* <--- Adicionei a chave que estava faltando aqui! */}
+
+          {/* Formulário de criação de aviso (só para professores) */}
+          {isTeacher && (
+            <NoticeForm onSubmit={handleAddNotice}>
+              <NoticeInput 
+                placeholder="Escreva um novo aviso..." 
+                value={newNotice}
+                onChange={(e) => setNewNotice(e.target.value)}
+                required
+              />
+              <AddNoticeBtn type="submit">Publicar Aviso</AddNoticeBtn>
+            </NoticeForm>
+          )}
+        </NoticeCard>
+
       </LeftSidebar>
     </>
   );

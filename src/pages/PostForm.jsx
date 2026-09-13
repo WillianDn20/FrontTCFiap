@@ -38,6 +38,7 @@ const FileLabel = styled.label`
   display: flex;
   flex-direction: column;
   gap: 5px;
+  margin-top: 10px;
 `;
 
 const TextArea = styled.textarea`
@@ -59,9 +60,45 @@ const Button = styled.button`
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: 10px;
 
   &:hover {
     background-color: #2ecc71;
+  }
+`;
+
+// --- Estilos da Pré-visualização do Anexo ---
+const PreviewBox = styled.div`
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+`;
+
+const PreviewImage = styled.img`
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 4px;
+  object-fit: contain;
+`;
+
+const RemoveAttachmentBtn = styled.button`
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #c0392b;
   }
 `;
 
@@ -69,11 +106,11 @@ function PostForm() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [attachment, setAttachment] = useState('');
+  
   const { id } = useParams();
   const navigate = useNavigate();
   const userName = localStorage.getItem('userName') || 'Teacher';
 
-  // Verifica se o ID passado na URL é realmente um ID válido do MongoDB (24 caracteres hexadecimais)
   const isEditing = id && id.length === 24;
 
   useEffect(() => {
@@ -110,6 +147,14 @@ function PostForm() {
     reader.readAsDataURL(file);
   };
 
+  const handleRemoveAttachment = () => {
+    if(window.confirm("Deseja remover o anexo desta postagem?")) {
+      setAttachment(''); // Limpa o anexo da memória
+      // Também seria ideal limpar o valor do input de arquivo, 
+      // mas como ele já está vazio visualmente na edição, só limpar o estado basta.
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -123,12 +168,15 @@ function PostForm() {
         await api.post('/posts', postData);
         alert("Post criado com sucesso!");
       }
-      navigate('/admin');
+      navigate('/');
     } catch (error) {
       console.error("Error saving post:", error);
       alert("Erro ao salvar a postagem. Verifique os dados.");
     }
   };
+
+  const isImage = attachment && attachment.startsWith('data:image');
+  const isPdf = attachment && attachment.startsWith('data:application/pdf');
 
   return (
     <Container>
@@ -150,14 +198,26 @@ function PostForm() {
           required
         />
 
-        <FileLabel>
-          Anexo (Apenas Imagens ou PDF):
-          <Input 
-            type="file" 
-            accept="image/*,application/pdf"
-            onChange={handleFileChange}
-          />
-        </FileLabel>
+        {/* Exibe a pré-visualização se já existir um anexo */}
+        {attachment ? (
+          <PreviewBox>
+            <strong>Anexo atual:</strong>
+            {isImage && <PreviewImage src={attachment} alt="Pré-visualização do anexo" />}
+            {isPdf && <p>📄 Documento PDF anexado.</p>}
+            <RemoveAttachmentBtn type="button" onClick={handleRemoveAttachment}>
+              Remover Anexo
+            </RemoveAttachmentBtn>
+          </PreviewBox>
+        ) : (
+          <FileLabel>
+            Anexo (Apenas Imagens ou PDF):
+            <Input 
+              type="file" 
+              accept="image/*,application/pdf"
+              onChange={handleFileChange}
+            />
+          </FileLabel>
+        )}
         
         <Button type="submit">{isEditing ? 'Salvar Alterações' : 'Publicar Postagem'}</Button>
       </Form>
