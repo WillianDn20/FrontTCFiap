@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import api from '../services/api';
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto 40px auto; 
   padding: 0 20px;
   font-family: Arial, sans-serif;
@@ -42,9 +42,7 @@ const SearchButton = styled.button`
   cursor: pointer;
   transition: background-color 0.2s;
 
-  &:hover {
-    background-color: #2980b9;
-  }
+  &:hover { background-color: #2980b9; }
 `;
 
 const CreateButton = styled.button`
@@ -58,9 +56,7 @@ const CreateButton = styled.button`
   cursor: pointer;
   transition: background-color 0.2s;
 
-  &:hover {
-    background-color: #2ecc71;
-  }
+  &:hover { background-color: #2ecc71; }
 `;
 
 const PostCard = styled(Link)`
@@ -81,17 +77,13 @@ const PostCard = styled(Link)`
   }
 `;
 
-const CoverBanner = styled.div`
-  display: flex;
-  align-items: center; 
-  background-color: ${props => props.$color || '#3498db'};
-  color: white;
-  padding: 0 20px;
-  height: 38px; 
-  font-size: 0.8em;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+// Capa refinada: Altura proporcional, cantos arredondados no topo e respiro elegante
+const CardCoverImage = styled.img`
+  width: 100%;
+  height: 180px; /* Altura ideal para exibir banner sem cortar demais */
+  object-fit: cover;
+  display: block;
+  background-color: #000; /* Fundo escuro caso a imagem demore a carregar */
 `;
 
 const CardBody = styled.div`
@@ -132,19 +124,24 @@ const PostPreview = styled.p`
   overflow: hidden;
 `;
 
-const PostThumbnail = styled.img`
+const ThumbnailContainer = styled.div`
+  position: relative;
   width: 120px;
   height: 90px;
-  object-fit: cover; 
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
   flex-shrink: 0;
 `;
 
-// Caixa do PDF exatamente nas mesmas dimensões da imagem (120x90px)
+const PostThumbnail = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+`;
+
 const PdfAttachmentBox = styled.div`
-  width: 120px;
-  height: 90px;
+  width: 100%;
+  height: 100%;
   background-color: #f1f2f6;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
@@ -152,18 +149,29 @@ const PdfAttachmentBox = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  flex-shrink: 0;
+  gap: 2px;
   color: #7f8c8d;
-  font-size: 1.8em;
+  font-size: 1.5em;
 
   span {
-    font-size: 0.4em;
+    font-size: 0.45em;
     font-weight: bold;
     color: #95a5a6;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
+`;
+
+const ExtraBadge = styled.div`
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 0.7em;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
 `;
 
 const formatarDataHora = (dataString) => {
@@ -235,15 +243,22 @@ function Home() {
           const dataExibicao = post.updatedAt || post.createdAt || Date.now();
           const isEdited = post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
           
-          const hasImage = post.attachment && post.attachment.startsWith('data:image');
-          const hasPdf = post.attachment && post.attachment.startsWith('data:application/pdf');
+          let listAttachments = post.attachments || [];
+          if (listAttachments.length === 0 && post.attachment) {
+            listAttachments = [post.attachment];
+          }
+
+          const hasAttachments = listAttachments.length > 0;
+          const firstAttachment = hasAttachments ? listAttachments[0] : null;
+          const isFirstImage = firstAttachment && firstAttachment.startsWith('data:image');
+          const isFirstPdf = firstAttachment && firstAttachment.startsWith('data:application/pdf');
+          const extraCount = listAttachments.length - 1;
 
           return (
             <PostCard to={`/post/${post._id || post.id}`} key={post._id || post.id}>
-              {post.coverText && (
-                <CoverBanner $color={post.coverColor || '#3498db'}>
-                  {post.coverText}
-                </CoverBanner>
+              {/* Imagem de Capa compacta e elegante no topo */}
+              {post.coverImage && (
+                <CardCoverImage src={post.coverImage} alt="Capa" />
               )}
 
               <CardBody>
@@ -256,17 +271,22 @@ function Home() {
                   <PostPreview>{post.content}</PostPreview>
                 </PostContentArea>
 
-                {/* Mostra a miniatura se for imagem */}
-                {hasImage && (
-                  <PostThumbnail src={post.attachment} alt="Miniatura do post" />
-                )}
+                {hasAttachments && (
+                  <ThumbnailContainer>
+                    {isFirstImage && <PostThumbnail src={firstAttachment} alt="Anexo" />}
+                    {isFirstPdf && (
+                      <PdfAttachmentBox>
+                        📎
+                        <span>PDF</span>
+                      </PdfAttachmentBox>
+                    )}
 
-                {/* Mostra a caixinha com o clipe se for PDF, ocupando o mesmo exato espaço da foto */}
-                {hasPdf && (
-                  <PdfAttachmentBox title="Contém documento PDF anexado">
-                    📎
-                    <span>PDF</span>
-                  </PdfAttachmentBox>
+                    {extraCount > 0 && (
+                      <ExtraBadge>
+                        +{extraCount} {extraCount === 1 ? 'anexo' : 'anexos'}
+                      </ExtraBadge>
+                    )}
+                  </ThumbnailContainer>
                 )}
               </CardBody>
             </PostCard>

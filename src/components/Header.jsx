@@ -46,7 +46,7 @@ const NavLink = styled(RouterNavLink)`
 const LeftSidebar = styled.aside`
   position: fixed;
   top: 40px; 
-  left: 20px;
+  left: 40px;
   width: 260px;
   bottom: 20px; 
   overflow-y: auto; 
@@ -228,12 +228,12 @@ function Header() {
     if (userRole) {
       document.body.style.marginLeft = '300px'; 
       document.body.style.paddingTop = '110px'; 
-      document.body.style.backgroundColor = '#e8ecef';
+      document.body.style.backgroundColor = '#e7e7e7ac';
       loadNotices(); 
     } else {
       document.body.style.marginLeft = '0';
       document.body.style.paddingTop = '0';
-      document.body.style.backgroundColor = 'white';
+      document.body.style.backgroundColor = '#e7e7e7ac';
     }
     
     return () => {

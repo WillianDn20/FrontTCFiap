@@ -13,7 +13,6 @@ const Container = styled.div`
   font-family: Arial, sans-serif;
 `;
 
-// Nova Barra de Ações (Alinha o voltar à esquerda e os botões à direita)
 const TopActions = styled.div`
   display: flex;
   justify-content: space-between;
@@ -21,13 +20,12 @@ const TopActions = styled.div`
   margin-bottom: 25px;
 `;
 
-// Botão de voltar padronizado com os botões administrativos
 const BackButton = styled(Link)`
   display: inline-flex;
   align-items: center;
   padding: 8px 15px;
-  background-color: #1a7ee2;
-  color: white;
+  background-color: #2f88e1;
+  color: rgb(254, 254, 254);
   text-decoration: none;
   font-weight: bold;
   border-radius: 4px;
@@ -35,7 +33,7 @@ const BackButton = styled(Link)`
   transition: all 0.2s;
 
   &:hover {
-    background-color: #105fad;
+    background-color: #1155ae;
   }
 `;
 
@@ -59,19 +57,37 @@ const ActionButton = styled.button`
   }
 `;
 
+// Título e Autor ficam em cima agora
 const TitleBox = styled.div`
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 `;
 
 const Title = styled.h1`
   color: #2c3e50;
   margin-bottom: 10px;
+  font-size: 2em;
 `;
 
 const AuthorDate = styled.p`
   color: #7f8c8d;
-  font-size: 0.9em;
+  font-size: 0.95em;
   margin: 0;
+`;
+
+// Imagem de Capa logo abaixo do título
+const CoverImage = styled.img`
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.95;
+  }
 `;
 
 const ModalOverlay = styled.div`
@@ -103,10 +119,6 @@ const CloseModalButton = styled.button`
   color: white;
   font-size: 40px;
   cursor: pointer;
-  
-  &:hover {
-    color: #ccc;
-  }
 `;
 
 const Content = styled.div`
@@ -115,39 +127,74 @@ const Content = styled.div`
   font-size: 1.1em;
   margin-bottom: 30px;
   white-space: pre-wrap;
+  word-break: break-word;
 `;
 
-const AttachmentBox = styled.div`
+const AttachmentsSection = styled.div`
   margin-bottom: 40px;
-  padding: 15px;
+  padding: 20px;
   background-color: #f8f9fa;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
+`;
 
-  img {
-    max-width: 100%;
-    max-height: 400px;
-    height: auto;
-    object-fit: contain;
-    border-radius: 4px;
-    display: block;
-    margin-top: 15px;
-    cursor: pointer;
-    transition: opacity 0.2s;
+const SectionSubTitle = styled.strong`
+  display: block;
+  margin-bottom: 15px;
+  color: #2c3e50;
+`;
+
+const AttachmentsGrid = styled.div`
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+`;
+
+const AttachmentThumb = styled.img`
+  width: 180px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+`;
+
+const PdfCardBox = styled.a`
+  width: 180px;
+  height: 130px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #34495e;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-color: #3498db;
   }
 
-  img:hover {
-    opacity: 0.85;
-  }
-
-  a {
-    color: #3498db;
+  .clip { font-size: 2em; }
+  .label {
+    font-size: 0.85em;
     font-weight: bold;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
+    color: #2980b9;
+    background-color: #ebf5fb;
+    padding: 4px 10px;
+    border-radius: 4px;
   }
 `;
 
@@ -172,14 +219,8 @@ const CommentCard = styled.div`
   justify-content: space-between;
   align-items: flex-start;
 
-  p {
-    margin: 0 0 5px 0;
-    color: #333;
-  }
-
-  small {
-    color: #7f8c8d;
-  }
+  p { margin: 0 0 5px 0; color: #333; }
+  small { color: #7f8c8d; }
 `;
 
 const DeleteButton = styled.button`
@@ -189,10 +230,7 @@ const DeleteButton = styled.button`
   cursor: pointer;
   font-weight: bold;
   font-size: 0.85em;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  &:hover { text-decoration: underline; }
 `;
 
 const CommentForm = styled.form`
@@ -220,10 +258,7 @@ const Button = styled.button`
   font-weight: bold;
   cursor: pointer;
   align-self: flex-start;
-
-  &:hover {
-    background-color: #2ecc71;
-  }
+  &:hover { background-color: #2ecc71; }
 `;
 
 const formatarDataHora = (dataString) => {
@@ -239,7 +274,7 @@ function Post() {
   const navigate = useNavigate(); 
   const [post, setPost] = useState(null);
   const [newComment, setNewComment] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImg, setModalImg] = useState(null); 
   
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole') || 'student';
@@ -259,46 +294,34 @@ function Post() {
 
   const handleDeletePost = async () => {
     if (!window.confirm("Deseja realmente excluir esta postagem?")) return;
-
     try {
       await api.delete(`/posts/${id}`);
       alert("Postagem excluída com sucesso.");
       navigate('/'); 
     } catch (error) {
       console.error("Erro ao deletar post:", error);
-      alert("Erro ao excluir postagem.");
     }
   };
 
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-
     try {
-      const response = await api.post(`/posts/${id}/comments`, {
-        text: newComment,
-        author: userName
-      });
+      const response = await api.post(`/posts/${id}/comments`, { text: newComment, author: userName });
       setPost(response.data);
       setNewComment('');
     } catch (error) {
       console.error("Error sending comment:", error);
-      alert("Error sending comment.");
     }
   };
 
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm("Deseja realmente excluir este comentário?")) return;
-
     try {
-      const response = await api.delete(`/posts/${id}/comments/${commentId}`, {
-        params: { userName, userRole }
-      });
+      const response = await api.delete(`/posts/${id}/comments/${commentId}`, { params: { userName, userRole } });
       setPost(response.data);
     } catch (error) {
       console.error("Error deleting comment:", error);
-      const errorMsg = error.response?.data?.error || "Erro ao deletar comentário.";
-      alert(errorMsg);
     }
   };
 
@@ -306,24 +329,20 @@ function Post() {
     return <Container><p>Carregando post...</p></Container>;
   }
 
-  const isImage = post.attachment && post.attachment.startsWith('data:image');
-  const isPdf = post.attachment && post.attachment.startsWith('data:application/pdf');
-
+  const listAttachments = post.attachments || [];
   const isEdited = post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
   const dataExibicao = post.updatedAt || post.createdAt || Date.now();
 
   return (
     <>
-      {isModalOpen && isImage && (
-        <ModalOverlay onClick={() => setIsModalOpen(false)}>
-          <CloseModalButton onClick={() => setIsModalOpen(false)}>&times;</CloseModalButton>
-          <ModalImage src={post.attachment} alt="Anexo em tela cheia" onClick={(e) => e.stopPropagation()} />
+      {modalImg && (
+        <ModalOverlay onClick={() => setModalImg(null)}>
+          <CloseModalButton onClick={() => setModalImg(null)}>&times;</CloseModalButton>
+          <ModalImage src={modalImg} alt="Zoom" onClick={(e) => e.stopPropagation()} />
         </ModalOverlay>
       )}
 
       <Container>
-        
-        {/* Nova Barra de Ações: Voltar na esquerda, Editar/Excluir na direita */}
         <TopActions>
           <BackButton to="/">&larr; Voltar</BackButton>
           
@@ -335,34 +354,56 @@ function Post() {
           )}
         </TopActions>
 
+        {/* 1. Título, Autor e Data agora ficam em cima */}
         <TitleBox>
           <Title>{post.title}</Title>
           <AuthorDate>
             Por <strong>{post.author}</strong> em {formatarDataHora(dataExibicao)} {isEdited ? '(Editado)' : ''}
           </AuthorDate>
         </TitleBox>
+
+        {/* 2. Foto de Capa aparece logo abaixo do título */}
+        {post.coverImage && (
+          <CoverImage 
+            src={post.coverImage} 
+            alt="Capa do post" 
+            onClick={() => setModalImg(post.coverImage)}
+            title="Clique para ampliar"
+          />
+        )}
         
+        {/* 3. Corpo do texto */}
         <Content>{post.content}</Content>
 
-        {post.attachment && (
-          <AttachmentBox>
-            <strong>Anexo da Postagem:</strong>
+        {listAttachments.length > 0 && (
+          <AttachmentsSection>
+            <SectionSubTitle>Anexos Laterais ({listAttachments.length}):</SectionSubTitle>
             
-            {isImage && (
-              <img 
-                src={post.attachment} 
-                alt="Anexo do Post" 
-                onClick={() => setIsModalOpen(true)}
-                title="Clique para ampliar"
-              />
-            )}
-            
-            {isPdf && (
-              <p style={{ marginTop: '10px' }}>
-                📄 <a href={post.attachment} download="documento-anexado.pdf">Baixar Documento PDF</a>
-              </p>
-            )}
-          </AttachmentBox>
+            <AttachmentsGrid>
+              {listAttachments.map((att, index) => {
+                const isImg = att.startsWith('data:image');
+                const isPdf = att.startsWith('data:application/pdf');
+
+                return (
+                  <React.Fragment key={index}>
+                    {isImg && (
+                      <AttachmentThumb 
+                        src={att} 
+                        alt={`Anexo ${index + 1}`} 
+                        onClick={() => setModalImg(att)}
+                      />
+                    )}
+                    {isPdf && (
+                      <PdfCardBox href={att} download={`documento-${index + 1}.pdf`}>
+                        <span className="clip">📎</span>
+                        <span className="label">Baixar PDF</span>
+                      </PdfCardBox>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </AttachmentsGrid>
+          </AttachmentsSection>
         )}
 
         <CommentsSection>
@@ -371,7 +412,6 @@ function Post() {
           {post.comments && post.comments.length > 0 ? (
             post.comments.map((c) => {
               const canDelete = userRole === 'teacher' || c.author === userName;
-
               return (
                 <CommentCard key={c._id || c.id}>
                   <div>
@@ -379,15 +419,13 @@ function Post() {
                     <small>Por <strong>{c.author}</strong> em {formatarDataHora(c.date)}</small>
                   </div>
                   {canDelete && (
-                    <DeleteButton onClick={() => handleDeleteComment(c._id || c.id)}>
-                      Excluir
-                    </DeleteButton>
+                    <DeleteButton onClick={() => handleDeleteComment(c._id || c.id)}>Excluir</DeleteButton>
                   )}
                 </CommentCard>
               );
             })
           ) : (
-            <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+            <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Nenhum comentário ainda.</p>
           )}
 
           <CommentForm onSubmit={handleAddComment}>
