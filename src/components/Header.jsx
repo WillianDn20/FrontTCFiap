@@ -3,9 +3,6 @@ import { NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import api from '../services/api';
 
-// ==========================================
-// ESTILOS DO MENU SUPERIOR (APPLE LIQUID GLASS)
-// ==========================================
 const GlassNav = styled.nav`
   position: fixed;
   top: 40px; 
@@ -46,9 +43,6 @@ const NavLink = styled(RouterNavLink)`
   }
 `;
 
-// ==========================================
-// ESTILOS DA BARRA LATERAL (PERFIL E AVISOS)
-// ==========================================
 const LeftSidebar = styled.aside`
   position: fixed;
   top: 40px; 
@@ -60,10 +54,7 @@ const LeftSidebar = styled.aside`
   flex-direction: column;
   gap: 20px; 
   z-index: 100;
-
-  &::-webkit-scrollbar {
-    width: 0px;
-  }
+  &::-webkit-scrollbar { width: 0px; }
 `;
 
 const GlassCard = styled.div`
@@ -139,13 +130,9 @@ const LogoutButton = styled.button`
   font-size: 1em;
   width: 100%;
   transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #c0392b;
-  }
+  &:hover { background-color: #c0392b; }
 `;
 
-// --- Estilos Específicos para os Avisos ---
 const NoticeTitle = styled.h3`
   margin: 0 0 15px 0;
   font-size: 1.1em;
@@ -155,7 +142,6 @@ const NoticeTitle = styled.h3`
   padding-bottom: 10px;
 `;
 
-// Transformado em flex para organizar os itens em coluna
 const NoticeItem = styled.div`
   background-color: rgba(255, 255, 255, 0.8);
   padding: 12px;
@@ -164,7 +150,7 @@ const NoticeItem = styled.div`
   border-left: 3px solid #f39c12;
   display: flex;
   flex-direction: column;
-  gap: 6px; /* Espaçamento entre texto, data e botão */
+  gap: 6px; 
 `;
 
 const NoticeText = styled.p`
@@ -172,7 +158,7 @@ const NoticeText = styled.p`
   font-size: 0.9em;
   color: #34495e;
   line-height: 1.4;
-  word-break: break-word; /* Garante que palavras gigantes não quebrem o layout */
+  word-break: break-word; 
 `;
 
 const NoticeDate = styled.small`
@@ -180,7 +166,6 @@ const NoticeDate = styled.small`
   color: #7f8c8d;
 `;
 
-// Botão agora fica naturalmente embaixo da data e alinhado à esquerda
 const DeleteNoticeBtn = styled.button`
   background: none;
   border: none;
@@ -191,10 +176,7 @@ const DeleteNoticeBtn = styled.button`
   align-self: flex-start;
   padding: 0;
   margin-top: 4px;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  &:hover { text-decoration: underline; }
 `;
 
 const NoticeForm = styled.form`
@@ -224,10 +206,7 @@ const AddNoticeBtn = styled.button`
   cursor: pointer;
   font-weight: bold;
   font-size: 0.85em;
-
-  &:hover {
-    background-color: #2ecc71;
-  }
+  &:hover { background-color: #2ecc71; }
 `;
 
 const formatarDataCurta = (dataString) => {
@@ -311,12 +290,13 @@ function Header() {
     <>
       <GlassNav>
         <NavLink to="/" end>Lista de Posts</NavLink>
+        {/* Nova aba adicionada para todos */}
+        <NavLink to="/calendario">Calendário</NavLink>
+        
         {isTeacher && <NavLink to="/admin">Painel Admin</NavLink>}
       </GlassNav>
 
       <LeftSidebar>
-        
-        {/* Card de Perfil */}
         <UserCard>
           <UserName>{userName}</UserName>
           <Avatar>{AvatarIcon}</Avatar>
@@ -325,7 +305,6 @@ function Header() {
           <LogoutButton onClick={handleLogout}>Sair da conta</LogoutButton>
         </UserCard>
 
-        {/* Card de Avisos */}
         <NoticeCard>
           <NoticeTitle>📌 Mural de Avisos</NoticeTitle>
           
@@ -337,15 +316,13 @@ function Header() {
                 <NoticeText>{notice.text}</NoticeText>
                 <NoticeDate>{formatarDataCurta(notice.createdAt)}</NoticeDate>
                 
-                {/* Botão de excluir agora aparece embaixo e organizadinho */}
                 {isTeacher && (
                   <DeleteNoticeBtn onClick={() => handleDeleteNotice(notice._id)}>Excluir</DeleteNoticeBtn>
                 )}
               </NoticeItem>
             ))
-          )} {/* <--- Adicionei a chave que estava faltando aqui! */}
+          )}
 
-          {/* Formulário de criação de aviso (só para professores) */}
           {isTeacher && (
             <NoticeForm onSubmit={handleAddNotice}>
               <NoticeInput 
@@ -358,7 +335,6 @@ function Header() {
             </NoticeForm>
           )}
         </NoticeCard>
-
       </LeftSidebar>
     </>
   );

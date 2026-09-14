@@ -5,7 +5,7 @@ import api from '../services/api';
 
 const Container = styled.div`
   max-width: 600px;
-  margin: 40px auto;
+  margin: 0 auto 40px auto;
   padding: 30px;
   background-color: white;
   border-radius: 8px;
@@ -50,6 +50,28 @@ const TextArea = styled.textarea`
   resize: vertical;
 `;
 
+const CoverSection = styled.div`
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+`;
+
+const ColorPickerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: 0.85em;
+    color: #555;
+    font-weight: bold;
+  }
+`;
+
 const Button = styled.button`
   padding: 12px;
   background-color: #27ae60;
@@ -67,7 +89,6 @@ const Button = styled.button`
   }
 `;
 
-// --- Estilos da Pré-visualização do Anexo ---
 const PreviewBox = styled.div`
   margin-top: 10px;
   padding: 15px;
@@ -106,6 +127,8 @@ function PostForm() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [attachment, setAttachment] = useState('');
+  const [coverColor, setCoverColor] = useState('#3498db');
+  const [coverText, setCoverText] = useState('');
   
   const { id } = useParams();
   const navigate = useNavigate();
@@ -125,6 +148,8 @@ function PostForm() {
       setTitle(response.data.title);
       setContent(response.data.content);
       setAttachment(response.data.attachment || '');
+      setCoverColor(response.data.coverColor || '#3498db');
+      setCoverText(response.data.coverText || '');
     } catch (error) {
       console.error("Error loading post:", error);
     }
@@ -149,9 +174,7 @@ function PostForm() {
 
   const handleRemoveAttachment = () => {
     if(window.confirm("Deseja remover o anexo desta postagem?")) {
-      setAttachment(''); // Limpa o anexo da memória
-      // Também seria ideal limpar o valor do input de arquivo, 
-      // mas como ele já está vazio visualmente na edição, só limpar o estado basta.
+      setAttachment('');
     }
   };
 
@@ -159,7 +182,7 @@ function PostForm() {
     e.preventDefault();
 
     try {
-      const postData = { title, content, author: userName, attachment };
+      const postData = { title, content, author: userName, attachment, coverColor, coverText };
 
       if (isEditing) {
         await api.put(`/posts/${id}`, postData);
@@ -190,6 +213,27 @@ function PostForm() {
           onChange={(e) => setTitle(e.target.value)}
           required
         />
+
+        <CoverSection>
+          <ColorPickerContainer>
+            <label>Cor da Capa:</label>
+            <input 
+              type="color" 
+              value={coverColor} 
+              onChange={(e) => setCoverColor(e.target.value)}
+              style={{ width: '50px', height: '40px', border: 'none', cursor: 'pointer', background: 'none' }}
+            />
+          </ColorPickerContainer>
+
+          <Input 
+            type="text" 
+            placeholder="Texto da capa (máx. 30 letras)" 
+            value={coverText}
+            maxLength={30}
+            onChange={(e) => setCoverText(e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </CoverSection>
         
         <TextArea 
           placeholder="Escreva o conteúdo do seu post aqui..." 
@@ -198,7 +242,6 @@ function PostForm() {
           required
         />
 
-        {/* Exibe a pré-visualização se já existir um anexo */}
         {attachment ? (
           <PreviewBox>
             <strong>Anexo atual:</strong>
