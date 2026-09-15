@@ -171,8 +171,8 @@ function Admin() {
   return (
     <Container>
       <HeaderRow>
-        <Title>Gerenciar Postagens</Title>
-        <CreateButton to="/post/novo">Novo Post</CreateButton>
+        <Title>Gerenciar postagens</Title>
+        <CreateButton to="/post/novo">Nova postagem</CreateButton>
       </HeaderRow>
 
       {posts.length === 0 ? (

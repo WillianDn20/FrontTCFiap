@@ -74,7 +74,6 @@ const AuthorDate = styled.p`
   margin: 0;
 `;
 
-// Imagem de Capa logo abaixo do título
 const CoverImage = styled.img`
   width: 100%;
   height: 320px;
@@ -377,7 +376,7 @@ function Post() {
 
         {listAttachments.length > 0 && (
           <AttachmentsSection>
-            <SectionSubTitle>Anexos Laterais ({listAttachments.length}):</SectionSubTitle>
+            <SectionSubTitle>Anexos ({listAttachments.length}):</SectionSubTitle>
             
             <AttachmentsGrid>
               {listAttachments.map((att, index) => {
@@ -435,7 +434,7 @@ function Post() {
               onChange={(e) => setNewComment(e.target.value)}
               required
             />
-            <Button type="submit">Enviar Comentário</Button>
+            <Button type="submit">Enviar comentário</Button>
           </CommentForm>
         </CommentsSection>
 

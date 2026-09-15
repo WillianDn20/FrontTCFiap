@@ -264,7 +264,7 @@ function PostForm() {
 
     try {
       await api.delete(`/posts/${id}`);
-      alert("Postagem excluída com sucesso.");
+      
       navigate('/admin');
     } catch (error) {
       console.error("Erro ao deletar post:", error);
@@ -280,10 +280,9 @@ function PostForm() {
 
       if (isEditing) {
         await api.put(`/posts/${id}`, postData);
-        alert("Post atualizado com sucesso!");
+
       } else {
         await api.post('/posts', postData);
-        alert("Post criado com sucesso!");
       }
       navigate('/admin');
     } catch (error) {
@@ -294,7 +293,7 @@ function PostForm() {
 
   return (
     <Container>
-      <Title>{isEditing ? 'Editar Postagem' : 'Nova Postagem'}</Title>
+      <Title>{isEditing ? 'Editar postagem' : 'Nova postagem'}</Title>
       
       <Form onSubmit={handleSubmit}>
         <Input 
@@ -306,7 +305,7 @@ function PostForm() {
         />
 
         <CoverImageSection>
-          <label>Foto de Capa do Post:</label>
+          <label>Capa da postagem:</label>
           <CoverPreviewBox>
             {coverImage ? (
               <>
@@ -325,14 +324,15 @@ function PostForm() {
         </CoverImageSection>
         
         <TextArea 
-          placeholder="Escreva o conteúdo do seu post aqui..." 
+          placeholder="Escreva o conteúdo da sua postagem aqui..." 
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
         />
 
         <FileLabel>
-          Anexos Laterais (Máximo de 3 arquivos):
+          Anexos (PDF ou imagem)
+          <span style={{ fontSize: '0.8em', color: '#888' }}>*Máximo de 3 arquivos</span>
           {attachments.length < 3 && (
             <Input 
               type="file" 

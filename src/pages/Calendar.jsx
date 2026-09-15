@@ -9,18 +9,11 @@ const Container = styled.div`
   font-family: Arial, sans-serif;
 `;
 
-const Title = styled.h1`
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 30px;
-`;
-
 const TopLayout = styled.div`
   display: flex;
   gap: 30px;
   align-items: flex-start;
-  margin-bottom: 50px;
+  margin-bottom: 20px; /* Ajustado para aproximar os próximos eventos */
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -43,7 +36,7 @@ const DayEventsBox = styled.div`
   width: 100%;
 `;
 
-// --- Elementos do Calendário Visual ---
+// Elementos do Calendário Visual 
 const CalHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -112,22 +105,22 @@ const EventDot = styled.div`
   bottom: 4px; 
 `;
 
-// --- Lista de Eventos (Eventos do Dia Selecionado) ---
+// Lista de Eventos
 const SectionTitle = styled.h2`
   color: #2c3e50;
   border-bottom: 2px solid #ecf0f1;
   padding-bottom: 10px;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   font-size: 1.3em;
 `;
 
 const EventCard = styled.div`
-  background-color: white;
+  background-color: ${props => props.$isHoliday ? '#fdf2f2' : 'white'};
   padding: 15px 20px;
   border-radius: 8px;
   margin-bottom: 15px;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid ${props => props.$isHoliday ? '#e74c3c' : '#3498db'};
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   display: flex;
   justify-content: space-between;
@@ -143,6 +136,12 @@ const EventInfo = styled.div`
     color: #2c3e50;
     font-size: 1.1em;
   }
+
+  span {
+    font-size: 0.8em;
+    color: #e74c3c;
+    font-weight: bold;
+  }
 `;
 
 const DeleteBtn = styled.button`
@@ -156,7 +155,6 @@ const DeleteBtn = styled.button`
   &:hover { background-color: #c0392b; }
 `;
 
-// --- Estilos Específicos para Próximos Eventos Agrupados (Compacto) ---
 const GroupedEventsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -179,10 +177,10 @@ const DayGroupTitle = styled.h3`
 `;
 
 const CompactEventItem = styled.div`
-  background-color: #f8f9fa;
+  background-color: ${props => props.$isHoliday ? '#fdf2f2' : '#f8f9fa'};
   padding: 8px 12px;
   border-radius: 4px;
-  border-left: 3px solid #3498db;
+  border-left: 3px solid ${props => props.$isHoliday ? '#e74c3c' : '#3498db'};
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
@@ -191,6 +189,13 @@ const CompactEventItem = styled.div`
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  span.holiday-tag {
+    font-size: 0.75em;
+    color: #e74c3c;
+    font-weight: bold;
+    margin-left: 6px;
   }
 `;
 
@@ -206,7 +211,6 @@ const CompactDeleteBtn = styled.button`
   &:hover { text-decoration: underline; }
 `;
 
-// --- Formulário do Professor ---
 const FormContainer = styled.form`
   display: flex;
   gap: 10px;
@@ -232,17 +236,16 @@ const AddBtn = styled.button`
   &:hover { background-color: #2ecc71; }
 `;
 
-// --- Helper para Formatar a Data com o Dia da Semana ---
 const formatarDataComDiaSemana = (date) => {
   const options = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
   const str = date.toLocaleDateString('pt-BR', options);
-  // Deixa a primeira letra maiúscula (Ex: "Segunda-feira, 14/09/2026")
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 
 function CalendarPage() {
   const [events, setEvents] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [title, setTitle] = useState(''); 
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -255,12 +258,30 @@ function CalendarPage() {
     loadEvents();
   }, []);
 
+  // Sempre que o ano mudar no calendário, busca os feriados nacionais daquele ano
+  useEffect(() => {
+    const yearToFetch = currentDate.getFullYear();
+    fetchHolidays(yearToFetch);
+  }, [currentDate]);
+
   const loadEvents = async () => {
     try {
       const response = await api.get('/events');
       setEvents(response.data);
     } catch (error) {
       console.error("Erro ao buscar eventos:", error);
+    }
+  };
+
+  const fetchHolidays = async (year) => {
+    try {
+      const response = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHolidays(data); // data é um array com { date: 'YYYY-MM-DD', name: '...' }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar feriados nacionais:", error);
     }
   };
 
@@ -315,28 +336,34 @@ function CalendarPage() {
     setSelectedDate(new Date(year, month, day));
   };
 
-  // --- 1. Eventos do Dia Selecionado ---
-  const selectedDayEvents = events.filter(e => {
-    const eDate = new Date(e.date);
-    return eDate.getDate() === selectedDate.getDate() &&
-           eDate.getMonth() === selectedDate.getMonth() &&
-           eDate.getFullYear() === selectedDate.getFullYear();
+  // ombinar Eventos da API do Banco e Feriados Nacionais
+  const formattedHolidays = holidays.map(h => ({
+    _id: `holiday-${h.date}`,
+    title: h.name,
+    date: `${h.date}T12:00:00`,
+    isHoliday: true
+  }));
+
+  const allCalendarItems = [...events, ...formattedHolidays];
+
+  const selectedDayItems = allCalendarItems.filter(item => {
+    const itemDate = new Date(item.date);
+    return itemDate.getDate() === selectedDate.getDate() &&
+           itemDate.getMonth() === selectedDate.getMonth() &&
+           itemDate.getFullYear() === selectedDate.getFullYear();
   });
 
-  // --- 2. Lógica dos Próximos Eventos (Agrupados e Limitados a 3 Dias) ---
+  // --- 2. Lógica dos Próximos Eventos e Feriados (Agrupados e Limitados a 3 Dias) ---
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  // Filtra eventos futuros e ordena do mais próximo ao mais distante
-  const upcomingRaw = events
-    .filter(e => new Date(e.date) >= startOfToday)
+  const upcomingRaw = allCalendarItems
+    .filter(item => new Date(item.date) >= startOfToday)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Agrupa os eventos pela data exata
   const groupedEvents = [];
-  upcomingRaw.forEach(event => {
-    const dateObj = new Date(event.date);
-    // Cria uma chave única no formato "YYYY-MM-DD" para agrupar as mesmas datas
+  upcomingRaw.forEach(item => {
+    const dateObj = new Date(item.date);
     const dateKey = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;
     
     let group = groupedEvents.find(g => g.key === dateKey);
@@ -348,15 +375,13 @@ function CalendarPage() {
       };
       groupedEvents.push(group);
     }
-    group.events.push(event);
+    group.events.push(item);
   });
 
-  // Limita a exibição aos próximos 3 dias agendados
   const top3UpcomingDays = groupedEvents.slice(0, 3);
 
   return (
     <Container>
-      <Title>Calendário Acadêmico</Title>
 
       <TopLayout>
         {/* Coluna 1: Calendário */}
@@ -372,9 +397,9 @@ function CalendarPage() {
               const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
               const isSelected = selectedDate && day === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear();
 
-              const hasEventOnThisDay = events.some(e => {
-                const eDate = new Date(e.date);
-                return eDate.getDate() === day && eDate.getMonth() === month && eDate.getFullYear() === year;
+              const hasItemOnThisDay = allCalendarItems.some(item => {
+                const itemDate = new Date(item.date);
+                return itemDate.getDate() === day && itemDate.getMonth() === month && itemDate.getFullYear() === year;
               });
 
               return (
@@ -386,17 +411,16 @@ function CalendarPage() {
                   onClick={() => handleDayClick(day)}
                 >
                   {day || ''}
-                  {day && hasEventOnThisDay && <EventDot $isSelected={isSelected} />}
+                  {day && hasItemOnThisDay && <EventDot $isSelected={isSelected} />}
                 </CalDay>
               );
             })}
           </CalGrid>
         </CalendarBox>
 
-        {/* Coluna 2: Eventos do Dia Selecionado */}
+        {/* Coluna 2: Eventos e Feriados do Dia Selecionado */}
         <DayEventsBox>
           <SectionTitle>
-            {/* Agora mostra o dia da semana: "Eventos de Segunda-feira, 14/09/2026" */}
             Eventos de {formatarDataComDiaSemana(selectedDate)}
           </SectionTitle>
 
@@ -413,16 +437,17 @@ function CalendarPage() {
             </FormContainer>
           )}
           
-          {selectedDayEvents.length === 0 ? (
+          {selectedDayItems.length === 0 ? (
             <p style={{ color: '#7f8c8d' }}>Nenhum evento agendado para este dia.</p>
           ) : (
-            selectedDayEvents.map(event => (
-              <EventCard key={event._id}>
+            selectedDayItems.map(item => (
+              <EventCard key={item._id} $isHoliday={item.isHoliday}>
                 <EventInfo>
-                  <strong>{event.title}</strong>
+                  <strong>{item.title}</strong>
+                  {item.isHoliday && <span>[Feriado Nacional]</span>}
                 </EventInfo>
-                {isTeacher && (
-                  <DeleteBtn onClick={() => handleDeleteEvent(event._id)}>Excluir</DeleteBtn>
+                {isTeacher && !item.isHoliday && (
+                  <DeleteBtn onClick={() => handleDeleteEvent(item._id)}>Excluir</DeleteBtn>
                 )}
               </EventCard>
             ))
@@ -430,7 +455,7 @@ function CalendarPage() {
         </DayEventsBox>
       </TopLayout>
 
-      {/* SEÇÃO INFERIOR: Próximos Eventos (Agrupados e Limitados a 3) */}
+      {/* SEÇÃO INFERIOR: Próximos Eventos e Feriados */}
       <SectionTitle>Próximos Eventos</SectionTitle>
       
       {top3UpcomingDays.length === 0 ? (
@@ -439,14 +464,16 @@ function CalendarPage() {
         <GroupedEventsContainer>
           {top3UpcomingDays.map(group => (
             <DayGroup key={group.key}>
-              {/* Título do grupo de eventos mostra "Sexta-feira, 18/09/2026" */}
               <DayGroupTitle>{formatarDataComDiaSemana(group.dateObj)}</DayGroupTitle>
               
-              {group.events.map(event => (
-                <CompactEventItem key={event._id}>
-                  <strong>{event.title}</strong>
-                  {isTeacher && (
-                    <CompactDeleteBtn onClick={() => handleDeleteEvent(event._id)}>
+              {group.events.map(item => (
+                <CompactEventItem key={item._id} $isHoliday={item.isHoliday}>
+                  <div>
+                    <strong>{item.title}</strong>
+                    {item.isHoliday && <span className="holiday-tag">[Feriado]</span>}
+                  </div>
+                  {isTeacher && !item.isHoliday && (
+                    <CompactDeleteBtn onClick={() => handleDeleteEvent(item._id)}>
                       Excluir
                     </CompactDeleteBtn>
                   )}

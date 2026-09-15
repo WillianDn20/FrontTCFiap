@@ -6,7 +6,7 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PostForm from './pages/PostForm';
-import Calendar from './pages/Calendar'; // <-- Importando a nova página
+import Calendar from './pages/Calendar'; 
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {

@@ -76,12 +76,12 @@ function Login() {
     try {
       const response = await api.post('/login', { email, password });
       
-      // Recebe o e-mail junto com o nome e a role
+      // Recebe o email junto com o nome e a role
       const { role, name, email: userEmail } = response.data;
       
       localStorage.setItem('userRole', role);
       localStorage.setItem('userName', name);
-      localStorage.setItem('userEmail', userEmail); // Salva o e-mail no navegador
+      localStorage.setItem('userEmail', userEmail); // Salva o email no navegador
       
       if (role === 'teacher') {
         navigate('/admin');
@@ -97,7 +97,7 @@ function Login() {
 
   return (
     <Container>
-      <Title>Acesso ao Sistema</Title>
+      <Title>Fazer login</Title>
       
       <Form onSubmit={handleLogin}>
         <Input 

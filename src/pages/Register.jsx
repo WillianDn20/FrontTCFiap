@@ -101,7 +101,7 @@ function Register() {
 
   return (
     <Container>
-      <Title>Criar Nova Conta</Title>
+      <Title>Criar nova conta</Title>
       
       <Form onSubmit={handleRegister}>
         <Input 
@@ -130,8 +130,8 @@ function Register() {
         
         {/* Valores em inglês exigidos pelo enum do Mongoose: student ou teacher */}
         <Select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="student">Acesso de Aluno</option>
-          <option value="teacher">Acesso de Professor (Docente)</option>
+          <option value="student">Acesso de aluno</option>
+          <option value="teacher">Acesso de professor</option>
         </Select>
         
         <Button type="submit">Cadastrar</Button>

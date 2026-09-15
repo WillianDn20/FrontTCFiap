@@ -289,11 +289,11 @@ function Header() {
   return (
     <>
       <GlassNav>
-        <NavLink to="/" end>Lista de Posts</NavLink>
+        <NavLink to="/" end>Postagens</NavLink>
         {/* Nova aba adicionada para todos */}
         <NavLink to="/calendario">Calendário</NavLink>
         
-        {isTeacher && <NavLink to="/admin">Painel Admin</NavLink>}
+        {isTeacher && <NavLink to="/admin">Gerenciar</NavLink>}
       </GlassNav>
 
       <LeftSidebar>
@@ -306,7 +306,7 @@ function Header() {
         </UserCard>
 
         <NoticeCard>
-          <NoticeTitle>📌 Mural de Avisos</NoticeTitle>
+          <NoticeTitle>📌 Mural de avisos</NoticeTitle>
           
           {notices.length === 0 ? (
             <p style={{ textAlign: 'center', fontSize: '0.85em', color: '#7f8c8d' }}>Nenhum aviso no momento.</p>
@@ -331,7 +331,7 @@ function Header() {
                 onChange={(e) => setNewNotice(e.target.value)}
                 required
               />
-              <AddNoticeBtn type="submit">Publicar Aviso</AddNoticeBtn>
+              <AddNoticeBtn type="submit">Publicar aviso</AddNoticeBtn>
             </NoticeForm>
           )}
         </NoticeCard>

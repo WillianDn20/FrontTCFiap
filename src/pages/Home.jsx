@@ -77,13 +77,13 @@ const PostCard = styled(Link)`
   }
 `;
 
-// Capa refinada: Altura proporcional, cantos arredondados no topo e respiro elegante
+// Capa
 const CardCoverImage = styled.img`
   width: 100%;
-  height: 180px; /* Altura ideal para exibir banner sem cortar demais */
+  height: 180px; 
   object-fit: cover;
   display: block;
-  background-color: #000; /* Fundo escuro caso a imagem demore a carregar */
+  background-color: #000; 
 `;
 
 const CardBody = styled.div`
@@ -218,8 +218,7 @@ function Home() {
 
   return (
     <Container>
-      <Title>Blog da Comunidade Educacional</Title>
-      
+    
       <SearchForm onSubmit={handleSearch}>
         <SearchInput 
           type="text"
@@ -231,7 +230,7 @@ function Home() {
         
         {(userRole === 'teacher' || userRole === 'professor') && (
           <CreateButton type="button" onClick={() => navigate('/post/novo')}>
-            Novo Post
+            Nova postagem
           </CreateButton>
         )}
       </SearchForm>
