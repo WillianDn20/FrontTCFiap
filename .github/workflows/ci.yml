@@ -1,0 +1,31 @@
+name: CI - Front-end
+
+# Executa toda vez que fizer push ou pull no repositório do Front
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Baixa o código do Front-end para a máquina virtual
+    - name: Baixar o codigo do repositorio
+      uses: actions/checkout@v3
+
+    # Configura o Node na versão 20
+    - name: Configurar o Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+
+    # Instala os pacotes do React/Vite
+    - name: Instalar dependencias
+      run: npm install
+
+    # Testa se o projeto compila sem erros de código
+    - name: Rodar o build de producao
+      run: npm run build
